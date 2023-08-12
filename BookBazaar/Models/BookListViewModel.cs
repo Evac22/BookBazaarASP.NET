@@ -1,12 +1,11 @@
-﻿
-using Data.Entities;
+﻿using Data.Entities;
 
-namespace BookBazaar.Models
+namespace BookBazaar.Models;
+
+public class BookListViewModel
 {
-    public class BookListViewModel
-    {
-         public PagingInfo PagingInfo { get; set; }
-         public IEnumerable<Book> Book { get; set; }
-        public string CurrentGenre { get; set; }
-    }
+    public PagingInfo PagingInfo { get; set; }
+    public IEnumerable<Book> Book { get; set; }
+    public string CurrentCategory { get; set; }
 }
+

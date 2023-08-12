@@ -1,57 +1,52 @@
 ﻿using Data.Entities;
 using Data.Interfaces;
 
-namespace Data.Repositories
+namespace Data.Repositories;
+public class BookRepository : IBookRepository
 {
-    public class BookRepository : IBookRepository
+    private readonly IDataDbContext _dbContext;
+
+    public BookRepository(IDataDbContext dbContext)
     {
-        private readonly IDataDbContext _dbContext;
+        _dbContext = dbContext;
+    }
 
-        public BookRepository(IDataDbContext dbContext)
+    public IEnumerable<Book> GetBook => _dbContext.Books;
+
+    public Book Get(Guid bookId) => _dbContext.Books.Find(bookId);
+
+    public void Add(Book book)
+    {
+        if (book.Id == Guid.Empty)
         {
-            _dbContext = dbContext;
+            book.Id = Guid.NewGuid();
         }
+        _dbContext.Books.Add(book);
 
-        public IEnumerable<Book> GetBook => _dbContext.Books;
+        _dbContext.SaveChanges();
+    }
 
-        public Book Get(Guid bookId) => _dbContext.Books.Find(bookId);
-
-        public void Add(Book book)
+    public Book Update(Book book)
+    {
+        var existingBook = _dbContext.Books.Find(book.Id);
+        if (existingBook != null)
         {
-            if (book.Id == Guid.Empty)
-            {
-                book.Id = Guid.NewGuid();
-            }
-            _dbContext.Books.Add(book);
-
+            existingBook.Name = book.Name;
+            existingBook.Description = book.Description;
+            existingBook.Genre = book.Genre;
+            existingBook.Price = book.Price;
             _dbContext.SaveChanges();
         }
+        return existingBook;
+    }
 
-        public Book Update(Book book)
+    public void Delete(Guid bookId)
+    {
+        var book = _dbContext.Books.Find(bookId);
+        if (book != null)
         {
-            var existingBook = _dbContext.Books.Find(book.Id);
-            if (existingBook != null)
-            {
-                existingBook.Name = book.Name;
-                existingBook.Description = book.Description;
-                existingBook.Genre = existingBook.Genre;
-                existingBook.Price = book.Price;
-                _dbContext.SaveChanges();
-            }
-            return existingBook;
-        }
-
-        public void Delete(Guid bookId)
-        {
-            var book = _dbContext.Books.Find(bookId);
-            if (book != null)
-            {
-                _dbContext.Books.Remove(book);
-                _dbContext.SaveChanges();
-            }
+            _dbContext.Books.Remove(book);
+            _dbContext.SaveChanges();
         }
     }
 }
-
-
-
