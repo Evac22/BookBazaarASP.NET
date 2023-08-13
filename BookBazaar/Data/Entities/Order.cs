@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Data.Entities;
 
@@ -21,6 +23,7 @@ public class Order
     [Display(Name = "Телефон")]
     public string Phone { get; set; }
 
+    [Column(TypeName = "decimal(18,2)")]
     [Display(Name = "Усього (грн)")]
     public decimal TotalPrice { get; set; }
 

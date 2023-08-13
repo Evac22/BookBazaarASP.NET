@@ -1,0 +1,16 @@
+﻿@using BookBazaar.HtmlHelper
+@using BookBazaar.Models;
+@model BookListViewModel
+
+@{
+    ViewBag.Title = "Товар";
+}
+
+@foreach (var book in Model.Book)
+{
+    @await Html.PartialAsync("_BookSummary", book)
+}
+
+<div class="btn-group pull-right">
+    @Html.PageLinks(Model.PagingInfo, x => Url.Action("List", new { page = x, category = Model.CurrentCategory }))
+</div>

@@ -7,7 +7,8 @@ namespace BookBazaar
 {
     public class Program
     {
-        private const string ConnectionString = "Data Source=books.db";
+        private const string ConnectionString = "Server=(localdb)\\mssqllocaldb;Database=BookBazaar;Trusted_Connection=True;";
+
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
@@ -16,7 +17,7 @@ namespace BookBazaar
             builder.Services.AddControllersWithViews();
 
             builder.Services.AddDbContext<IDataDbContext, DataDbContext>(options =>
-                options.UseSqlite(ConnectionString, b => b.MigrationsAssembly("BookBazaar")), ServiceLifetime.Scoped);
+                options.UseSqlServer(ConnectionString, b => b.MigrationsAssembly("BookBazaar")), ServiceLifetime.Scoped);
 
             builder.Services.AddScoped<IBookRepository, BookRepository>();
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
@@ -50,7 +51,7 @@ namespace BookBazaar
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Food}/{action=List}/{id?}");
+                pattern: "{controller=Book}/{action=List}/{id?}");
 
             app.Run();
 

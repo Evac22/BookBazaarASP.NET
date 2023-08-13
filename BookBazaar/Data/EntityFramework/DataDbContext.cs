@@ -34,5 +34,7 @@ public class DataDbContext : DbContext, IDataDbContext
             .HasOne(of => of.Book)
             .WithMany()
             .HasForeignKey(of => of.BookId);
+
+        
     }
 }

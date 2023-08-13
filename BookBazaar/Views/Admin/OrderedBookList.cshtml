@@ -1,0 +1,63 @@
+﻿@model IEnumerable<Data.Entities.OrderedBook>
+
+@{
+    ViewBag.Title = "OrderedBookList";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Список книжок
+    </div>
+
+    <div class="panel-body">
+        @using (Html.BeginForm("OrderList", "Admin"))
+        {
+            <div class="pull-left navbar-btn">
+                <input type="submit" class="btn btn-primary" value="Назад до списоку заказів" />
+            </div>
+        }
+        <table class="table table-striped table-condensed table-bordered">
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Book.Category)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Book.Category)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Book.Price)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Quantity)
+                </th>
+                <th>
+                    @Html.DisplayName("Сума, грн")
+                </th>
+            </tr>
+
+            @foreach (var item in Model)
+            {
+                decimal sum = item.Book.Price * item.Quantity;
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Book.Category)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Book.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Book.Price)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Quantity)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => sum)
+                    </td>
+                </tr>
+            }
+        </table>
+    </div>
+</div>
+

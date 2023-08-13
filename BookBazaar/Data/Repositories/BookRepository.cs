@@ -33,7 +33,7 @@ public class BookRepository : IBookRepository
         {
             existingBook.Name = book.Name;
             existingBook.Description = book.Description;
-            existingBook.Genre = book.Genre;
+            existingBook.Category = book.Category;
             existingBook.Price = book.Price;
             _dbContext.SaveChanges();
         }

@@ -4,92 +4,102 @@ using Data.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using ShippingDetails = BookBazaar.Models.ShippingDetails;
 
-namespace BookBazaar.Controllers
+namespace BookBazaar.Controllers;
+public class CartController : Controller
 {
-    public class CartController : Controller
+    private const string cartSessionKey = "Cart";
+
+    private readonly IBookRepository _bookRepository;
+    private readonly IOrderRepository _orderRepository;
+    public CartController(IBookRepository repository, IOrderRepository orderRepository)
     {
-        private const string cartSessionKey = "Cart";
+        _bookRepository = repository;
+        _orderRepository = orderRepository;
+    }
+    public ViewResult Index(Cart cart, string returnUrl)
+    {
+        return View(new CartIndexViewModel
+        {
+            Cart = cart,
+            ReturnUrl = returnUrl
+        });
+    }
 
-        private readonly IBookRepository _bookRepository;
-        private readonly IOrderRepository _orderRepository;
-        public CartController(IBookRepository bookRepository, IOrderRepository orderRepository)
+    public RedirectToActionResult AddToCart(Cart cart, Guid id, string returnUrl)
+    {
+        Book Book = _bookRepository.GetBook
+            .FirstOrDefault(p => p.Id == id);
+
+        if (Book != null)
         {
-            _bookRepository = bookRepository;
-            _orderRepository = orderRepository;
+            cart.AddItem(Book, 1);
         }
-        public ActionResult Index(Cart cart , string returnUrl)
+
+        HttpContext.Session.SetObject(cartSessionKey, cart);
+        return RedirectToAction("Index", new { returnUrl });
+    }
+
+    public RedirectToActionResult RemoveFromCart(Cart cart, Guid id, string returnUrl)
+    {
+        Book Book = _bookRepository.GetBook
+            .FirstOrDefault(p => p.Id == id);
+
+        if (Book != null)
         {
-            return View(new CartIndexViewModel
+            cart.RemoveLine(Book);
+        }
+
+        HttpContext.Session.SetObject(cartSessionKey, cart);
+        return RedirectToAction("Index", new { returnUrl });
+    }
+
+    public PartialViewResult Summary(Cart cart)
+    {
+        return PartialView(cart);
+    }
+
+    public ViewResult Checkout()
+    {
+        return View(new ShippingDetails());
+    }
+    [HttpPost]
+    public ViewResult Checkout(Cart cart, ShippingDetails shippingDetails)
+    {
+        if (cart.Lines.Count() == 0)
+        {
+            ModelState.AddModelError("", "Вибачте, кошик порожній!");
+        }
+        if (ModelState.IsValid)
+        {
+            var order = new Order
             {
-                Cart = cart ,
-                ReturnUrl = returnUrl
+                Address = shippingDetails.Address,
+                Email = shippingDetails.Email,
+                FirstName = shippingDetails.FirstName,
+                SecondName = shippingDetails.SecondName,
+                Phone = shippingDetails.Phone,
+                TotalPrice = cart.Lines.Sum(l => l.Book.Price * l.Quantity)
+            };
+
+            var orderedBook = cart.Lines.Select(x => new OrderedBook
+            {
+                Order = order,
+                BookId = x.Book.Id,
+                Quantity = x.Quantity,
+                Id = Guid.NewGuid()
             });
-        }
 
-        public RedirectToActionResult AddToCart(Cart cart, Guid id, string returnUrl)
-        {
-            Book Book = _bookRepository.GetBook
-                .FirstOrDefault(p => p.Id == id);
+            order.OrderedBook = orderedBook.ToArray();
 
-            if (Book == null)
-            {
-                cart.AddItem(Book, 1);
-            }
+            _orderRepository.Add(order);
 
+            cart.Clear();
             HttpContext.Session.SetObject(cartSessionKey, cart);
-            return RedirectToAction("Index", new {returnUrl});
+            return View("Completed");
         }
-
-        public PartialViewResult Summary(Cart cart)
-        {
-            return PartialView(cart);
-        }
-
-        public ViewResult Checkout()
+        else
         {
             return View(new ShippingDetails());
-        }
-
-        [HttpPost]
-        public ViewResult Checkout(Cart cart, ShippingDetails shippingDetails)
-        {
-            if (cart.Lines.Count() == 0)
-            {
-                ModelState.AddModelError("", "Извините, корзина пуста!");
-            }
-            if (ModelState.IsValid)
-            {
-                var order = new Order
-                {
-                    Address = shippingDetails.Address,
-                    Email = shippingDetails.Email,
-                    FirstName = shippingDetails.FirstName,
-                    SecondName = shippingDetails.SecondName,
-                    Phone = shippingDetails.Phone,
-                    TotalPrice = cart.Lines.Sum(l => l.Book.Price * l.Quantity)
-                };
-
-                var orderedBook = cart.Lines.Select(x => new OrderedBook
-                {
-                    Order = order,
-                    BookId = x.Book.Id,
-                    Quantity = x.Quantity,
-                    Id = Guid.NewGuid()
-                });
-
-                order.OrderedBook = orderedBook.ToArray();
-
-                _orderRepository.Add(order);
-
-                cart.Clear();
-                HttpContext.Session.SetObject(cartSessionKey, cart);
-                return View("Completed");
-            }
-            else
-            {
-                return View(new ShippingDetails());
-            }
-
         }
 
     }
